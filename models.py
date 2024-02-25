@@ -1,6 +1,7 @@
 import sqlalchemy as sq
 from sqlalchemy.orm import declarative_base, relationship
 
+
 BASE = declarative_base()
 
 
@@ -42,3 +43,8 @@ class Sale(BASE):
     id_stock = sq.Column(sq.Integer, sq.ForeignKey("stock.id"))
     count = sq.Column(sq.Integer)
     stock = relationship(Stock, backref="stock")
+    
+    
+def create_tables(engine):
+    BASE.metadata.drop_all(engine)
+    BASE.metadata.create_all(engine)

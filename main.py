@@ -1,7 +1,7 @@
 from dotenv import dotenv_values
 import sqlalchemy as sq
 from sqlalchemy.orm import sessionmaker
-from models import BASE, Publisher, Shop, Book, Stock, Sale
+from models import Publisher, Shop, Book, Stock, Sale, create_tables
 import json
 
 
@@ -11,12 +11,7 @@ DB = dotenv_values(".env")["NAME_DB"]
 DSN = f"postgresql://{LOGIN}:{PASSWORD}@localhost:5432/{DB}"
 
 
-def create_tables(engine):
-    BASE.metadata.drop_all(engine)
-    BASE.metadata.create_all(engine)
-
-
-def get_query_publisher(sess, publisher="O'Reilly"):
+def get_query_publisher(sess, publisher):
     q_book = sess.query(Book).all()
     q_shop = sess.query(Shop).all()
     book_len = 0
@@ -67,5 +62,6 @@ if __name__ == "__main__":
 
     add_test_data(session)
 
-    publisher_input = "O'Reilly"
+    publisher_input = input('Введите автора: ')
     get_query_publisher(session, publisher_input)
+    
