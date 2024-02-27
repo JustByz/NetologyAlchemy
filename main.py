@@ -12,46 +12,35 @@ DSN = f"postgresql://{LOGIN}:{PASSWORD}@localhost:5432/{DB}"
 
 
 def get_query_publisher(sess, publisher):
-    q_book = sess.query(Book).all()
-    q_shop = sess.query(Shop).all()
-    book_len = 0
-    for b in q_book:
-        if len(b.title) > book_len:
-            book_len = len(b.title)
-    shop_len = 0
-    for b in q_shop:
-        if len(b.name) > shop_len:
-            shop_len = len(b.name)
-    q = sess.query(Publisher).join(Book).join(Stock).join(Sale).filter(Publisher.name == publisher).all()
-    for pub in q:
-        for book in pub.book:
-            for stock in book.stock:
-                for sale in stock.stock:
-                    print(f'{pub.name} | '
-                          f'{book.title:<{book_len}} | '
-                          f'{stock.shop.name:<{shop_len}} | '
-                          f'{float(sale.price) * sale.count:>5} | '
-                          f'{sale.date_sale}'
-                          )
+    
+    q = sess.query(Book.title, Shop.name, Sale.price, Sale.date_sale).select_from(Shop).join(Stock).join(Book).join(Publisher).join(Sale)
+    
+    if publisher.isdigit():
+        fin = q.filter(Publisher.id == publisher).all()
+        print(fin)
+    else:
+        fin = q.filter(Publisher.name == publisher).all()
+        print(fin)
+    for title, name, price, date in fin:
+        print(f"{title: <40} | {name: <10} | {price: <8} | {date.strftime('%d-%m-%Y')}")
 
 
 def add_test_data(sess, file="tests_data.json"):
-    with open(file, "r") as file:
-        data = json.load(file)
-    for d in data:
-        if d['model'] == 'publisher':
-            model = Publisher
-        elif d['model'] == 'book':
-            model = Book
-        elif d['model'] == 'shop':
-            model = Shop
-        elif d['model'] == 'stock':
-            model = Stock
-        elif d['model'] == 'sale':
-            model = Sale
-        sess.add(model(id=d.get('pk'), **d.get('fields')))
-        sess.commit()
+    model = {
+    'publisher': Publisher,
+    'shop': Shop,
+    'book': Book,
+    'stock': Stock,
+    'sale': Sale
+    }
 
+    with open('tests_data.json', 'r') as file:
+        data = json.load(file)
+
+        for record in data:
+            sess.add(model[record.get('model')](id=record.get('pk'), **record.get('fields')))
+            sess.commit()
+            
 
 if __name__ == "__main__":
     engine = sq.create_engine(DSN)
