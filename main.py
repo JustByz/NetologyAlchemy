@@ -51,6 +51,6 @@ if __name__ == "__main__":
 
     add_test_data(session)
 
-    publisher_input = input('Введите автора: ')
+    publisher_input = input('Введите имя или id автора: ')
     get_query_publisher(session, publisher_input)
     
